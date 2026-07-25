@@ -1,0 +1,47 @@
+.table-wrap {
+  padding: 0;
+  overflow-x: auto;
+}
+
+.viagem-table {
+  font-size: 14px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .viagem-table {
+    min-width: 680px;
+  }
+}
+
+.viagem-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gridline);
+}
+
+.viagem-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gridline);
+  white-space: nowrap;
+}
+
+.viagem-table tr:last-child td {
+  border-bottom: none;
+}
+
+.viagem-table td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.viagem-table td.actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LogiTrack Pro</title>
+    <script>
+      // Aplica o tema salvo antes do primeiro paint, evitando flash do tema errado.
+      (function () {
+        var tema = localStorage.getItem("logitrack-theme");
+        if (tema === "light" || tema === "dark") {
+          document.documentElement.setAttribute("data-theme", tema);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
