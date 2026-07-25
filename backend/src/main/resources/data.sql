@@ -16,3 +16,10 @@ INSERT INTO manutencoes (veiculo_id, data_inicio, data_finalizacao, tipo_servico
 (1, '2024-06-10', '2024-06-11', 'Troca de Óleo', 350.00, 'PENDENTE'),
 (2, '2024-06-15', '2024-06-17', 'Revisão de Freios', 1500.00, 'PENDENTE'),
 (3, '2024-05-20', '2024-05-20', 'Troca de Pneus', 2200.00, 'CONCLUIDA');
+
+-- Duas manutenções extras com data_inicio calculada em cima do mês atual (CURRENT_DATE),
+-- para a métrica "Projeção Financeira" do dashboard nunca ficar zerada, independente
+-- de quando o projeto for rodado/avaliado já que o seed original é de 2024.
+INSERT INTO manutencoes (veiculo_id, data_inicio, data_finalizacao, tipo_servico, custo_estimado, status) VALUES
+(2, (date_trunc('month', CURRENT_DATE) + INTERVAL '5 days')::date, NULL, 'Troca de Correia Dentada', 980.00, 'PENDENTE'),
+(4, (date_trunc('month', CURRENT_DATE) + INTERVAL '12 days')::date, (date_trunc('month', CURRENT_DATE) + INTERVAL '14 days')::date, 'Revisão Geral', 3200.00, 'EM_REALIZACAO');
