@@ -1,0 +1,87 @@
+.proximas-card {
+  margin-bottom: 16px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.dashboard-table {
+  font-size: 13px;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .dashboard-table {
+    min-width: 560px;
+  }
+}
+
+.dashboard-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--gridline);
+}
+
+.dashboard-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--gridline);
+}
+
+.dashboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dashboard-table td.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.status-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* A cor de status fica só na "bolinha" + fundo sutil — o texto permanece
+   em tinta neutra (nunca herda a cor do dado), conforme a regra de marks. */
+.status-pill {
+  color: var(--text-secondary);
+}
+
+.status-pendente {
+  background: var(--gridline);
+}
+.status-pendente::before {
+  background: var(--text-muted);
+}
+
+.status-em_realizacao {
+  background: color-mix(in srgb, var(--status-warning) 22%, transparent);
+}
+.status-em_realizacao::before {
+  background: var(--status-warning);
+}
+
+.status-concluida {
+  background: color-mix(in srgb, var(--status-good) 16%, transparent);
+}
+.status-concluida::before {
+  background: var(--status-good);
+}

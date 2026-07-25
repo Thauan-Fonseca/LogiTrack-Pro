@@ -1,0 +1,58 @@
+import { useEffect, useState } from "react";
+import { dashboardApi } from "../api/dashboardApi";
+import VeiculoSelect from "../components/VeiculoSelect";
+import StatTile from "../components/dashboard/StatTile";
+import VolumeCategoriaBars from "../components/dashboard/VolumeCategoriaBars";
+import ProximasManutencoesTable from "../components/dashboard/ProximasManutencoesTable";
+import RankingUtilizacaoTable from "../components/dashboard/RankingUtilizacaoTable";
+import type { DashboardResponse } from "../types/dashboard";
+import "./DashboardPage.css";
+
+const formatoKm = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
+const formatoMoeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+export default function DashboardPage() {
+  const [dados, setDados] = useState<DashboardResponse | null>(null);
+  const [veiculoId, setVeiculoId] = useState<number | "">("");
+
+  useEffect(() => {
+    dashboardApi.obter(veiculoId === "" ? undefined : veiculoId).then(setDados);
+  }, [veiculoId]);
+
+  if (!dados) {
+    return <p className="empty-state">Carregando dashboard...</p>;
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <h1>Dashboard</h1>
+      </div>
+
+      <div className="stat-row">
+        <StatTile
+          label="Total de KM percorrido"
+          value={`${formatoKm.format(dados.kmTotal.totalKm)} km`}
+          sublabel={veiculoId === "" ? "Frota inteira" : "Veículo selecionado"}
+          action={
+            <div className="stat-tile-filter">
+              <VeiculoSelect value={veiculoId} onChange={setVeiculoId} placeholderLabel="Frota inteira" />
+            </div>
+          }
+        />
+        <StatTile
+          label="Projeção financeira (mês atual)"
+          value={formatoMoeda.format(dados.projecaoFinanceiraMesAtual.custoTotalEstimado)}
+          sublabel={`${dados.projecaoFinanceiraMesAtual.quantidadeManutencoes} manutenção(ões) no mês`}
+        />
+      </div>
+
+      <ProximasManutencoesTable dados={dados.proximasManutencoes} />
+
+      <div className="dashboard-grid">
+        <RankingUtilizacaoTable dados={dados.rankingUtilizacao} />
+        <VolumeCategoriaBars dados={dados.volumePorCategoria} />
+      </div>
+    </div>
+  );
+}
