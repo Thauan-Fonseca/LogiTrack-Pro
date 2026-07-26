@@ -11,7 +11,7 @@ export interface Viagem {
 }
 
 export interface ViagemRequest {
-  veiculoId: number;
+  veiculoId: number | null;
   dataSaida: string;
   dataChegada?: string | null;
   origem: string;

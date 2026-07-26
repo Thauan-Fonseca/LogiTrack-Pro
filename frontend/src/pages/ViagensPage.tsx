@@ -3,6 +3,7 @@ import { viagensApi } from "../api/viagensApi";
 import { extrairErro } from "../api/errorUtils";
 import ViagemTable from "../components/ViagemTable";
 import ViagemForm from "../components/ViagemForm";
+import ConfirmDialog from "../components/ConfirmDialog";
 import type { Viagem, ViagemRequest } from "../types/viagem";
 
 export default function ViagensPage() {
@@ -10,6 +11,7 @@ export default function ViagensPage() {
   const [carregando, setCarregando] = useState(true);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [viagemEmEdicao, setViagemEmEdicao] = useState<Viagem | null>(null);
+  const [viagemParaExcluir, setViagemParaExcluir] = useState<Viagem | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string> | null>(null);
 
@@ -55,12 +57,10 @@ export default function ViagensPage() {
     }
   }
 
-  async function excluir(viagem: Viagem) {
-    const confirmado = window.confirm(
-      `Excluir a viagem de ${viagem.origem} para ${viagem.destino} (${viagem.veiculo.placa})?`
-    );
-    if (!confirmado) return;
-    await viagensApi.excluir(viagem.id);
+  async function confirmarExclusao() {
+    if (!viagemParaExcluir) return;
+    await viagensApi.excluir(viagemParaExcluir.id);
+    setViagemParaExcluir(null);
     carregar();
   }
 
@@ -87,8 +87,22 @@ export default function ViagensPage() {
       )}
 
       {carregando ? <p className="empty-state">Carregando...</p> : (
-        <ViagemTable viagens={viagens} onEditar={abrirEdicao} onExcluir={excluir} />
+        <ViagemTable viagens={viagens} onEditar={abrirEdicao} onExcluir={setViagemParaExcluir} />
       )}
+
+      <ConfirmDialog
+        open={viagemParaExcluir !== null}
+        title="Excluir viagem"
+        message={
+          viagemParaExcluir
+            ? `Excluir a viagem de ${viagemParaExcluir.origem} para ${viagemParaExcluir.destino} (${viagemParaExcluir.veiculo.placa})? Essa ação não pode ser desfeita.`
+            : ""
+        }
+        confirmLabel="Excluir"
+        danger
+        onConfirm={confirmarExclusao}
+        onCancel={() => setViagemParaExcluir(null)}
+      />
     </div>
   );
 }
