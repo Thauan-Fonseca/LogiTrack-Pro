@@ -1,3 +1,7 @@
+-- Usuário de demonstração para login (username: admin / senha: admin123)
+INSERT INTO usuarios (username, senha, nome) VALUES
+('admin', '$2a$10$UL.T2dO3y7Cv2XauBnZTdO.gaBdO.b/er9xYrGYmjzUOsAsmG/hze', 'Administrador');
+
 -- Inserindo Veículos
 INSERT INTO veiculos (placa, modelo, tipo, ano) VALUES
 ('ABC-1234', 'Fiorino', 'LEVE', 2022),

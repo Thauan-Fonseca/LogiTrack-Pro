@@ -1,6 +1,15 @@
 -- Reset a cada subida do backend: garante um dataset sempre limpo e reprodutível
 -- (decisão documentada no README).
-DROP TABLE IF EXISTS viagens, manutencoes, veiculos CASCADE;
+DROP TABLE IF EXISTS viagens, manutencoes, veiculos, usuarios CASCADE;
+
+-- Tabela de usuários (autenticação). Não faz parte do script original da
+-- empresa — adicionada para o diferencial de segurança (login + JWT).
+CREATE TABLE usuarios (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    senha VARCHAR(100) NOT NULL,
+    nome VARCHAR(100)
+);
 
 -- 1. Criação da Tabela de Veículos
 -- BIGSERIAL/BIGINT em vez de SERIAL/INTEGER nos IDs: Long é o tipo idiomático
