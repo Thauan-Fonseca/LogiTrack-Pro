@@ -43,6 +43,7 @@ export default function LoginPage() {
             id="login-username"
             type="text"
             autoComplete="username"
+            placeholder="admin"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoFocus
@@ -55,6 +56,7 @@ export default function LoginPage() {
             id="login-senha"
             type="password"
             autoComplete="current-password"
+            placeholder="••••••••"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />

@@ -1,0 +1,68 @@
+.confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.confirm-card {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: confirm-pop 0.15s ease;
+}
+
+.confirm-card h3 {
+  font-size: 16px;
+}
+
+.confirm-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn.btn-confirm-danger {
+  background: var(--status-critical);
+  border-color: var(--status-critical);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 8px color-mix(in srgb, var(--status-critical) 35%, transparent);
+}
+
+.btn.btn-confirm-danger:hover {
+  background: color-mix(in srgb, var(--status-critical) 87%, black);
+  border-color: color-mix(in srgb, var(--status-critical) 87%, black);
+}
+
+@keyframes confirm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .confirm-actions .btn {
+    width: 100%;
+  }
+}

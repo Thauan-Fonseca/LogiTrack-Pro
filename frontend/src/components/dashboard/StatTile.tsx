@@ -5,14 +5,18 @@ interface StatTileProps {
   label: string;
   value: string;
   sublabel?: string;
+  icon?: ReactNode;
   action?: ReactNode;
 }
 
-export default function StatTile({ label, value, sublabel, action }: StatTileProps) {
+export default function StatTile({ label, value, sublabel, icon, action }: StatTileProps) {
   return (
     <div className="card stat-tile">
       <div className="stat-tile-header">
-        <span className="stat-tile-label">{label}</span>
+        <span className="stat-tile-label">
+          {icon && <span className="stat-tile-icon">{icon}</span>}
+          {label}
+        </span>
         {action}
       </div>
       <span className="stat-tile-value">{value}</span>

@@ -11,6 +11,10 @@ interface ViagemFormProps {
   onCancel: () => void;
 }
 
+function removerNumeros(valor: string) {
+  return valor.replace(/[0-9]/g, "");
+}
+
 export default function ViagemForm({ viagemInicial, fieldErrors, onSubmit, onCancel }: ViagemFormProps) {
   const [veiculoId, setVeiculoId] = useState<number | "">(viagemInicial?.veiculo.id ?? "");
   const [dataSaida, setDataSaida] = useState(viagemInicial?.dataSaida.slice(0, 16) ?? "");
@@ -25,7 +29,7 @@ export default function ViagemForm({ viagemInicial, fieldErrors, onSubmit, onCan
     setEnviando(true);
     try {
       await onSubmit({
-        veiculoId: veiculoId as number,
+        veiculoId: veiculoId === "" ? null : veiculoId,
         dataSaida,
         dataChegada: dataChegada || null,
         origem,
@@ -62,12 +66,24 @@ export default function ViagemForm({ viagemInicial, fieldErrors, onSubmit, onCan
       <div className="field-row">
         <div className="field">
           <label>Origem</label>
-          <input type="text" value={origem} onChange={(e) => setOrigem(e.target.value)} maxLength={100} />
+          <input
+            type="text"
+            placeholder="Ex: Antônio Martins"
+            value={origem}
+            onChange={(e) => setOrigem(removerNumeros(e.target.value))}
+            maxLength={100}
+          />
           {fieldErrors?.origem && <p className="field-error">{fieldErrors.origem}</p>}
         </div>
         <div className="field">
           <label>Destino</label>
-          <input type="text" value={destino} onChange={(e) => setDestino(e.target.value)} maxLength={100} />
+          <input
+            type="text"
+            placeholder="Ex: Natal"
+            value={destino}
+            onChange={(e) => setDestino(removerNumeros(e.target.value))}
+            maxLength={100}
+          />
           {fieldErrors?.destino && <p className="field-error">{fieldErrors.destino}</p>}
         </div>
       </div>
@@ -78,6 +94,7 @@ export default function ViagemForm({ viagemInicial, fieldErrors, onSubmit, onCan
           type="number"
           min={0}
           step="0.01"
+          placeholder="Ex: 120.5"
           value={kmPercorrida}
           onChange={(e) => setKmPercorrida(e.target.value)}
         />
@@ -88,7 +105,7 @@ export default function ViagemForm({ viagemInicial, fieldErrors, onSubmit, onCan
         <button type="button" className="btn" onClick={onCancel} disabled={enviando}>
           Cancelar
         </button>
-        <button type="submit" className="btn btn-primary" disabled={enviando || veiculoId === ""}>
+        <button type="submit" className="btn btn-primary" disabled={enviando}>
           {enviando ? "Salvando..." : "Salvar"}
         </button>
       </div>
