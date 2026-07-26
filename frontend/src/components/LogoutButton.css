@@ -1,0 +1,38 @@
+.logout-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text-secondary);
+  font: inherit;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.logout-button:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+
+.logout-button svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.mobile-topbar .logout-button {
+  width: auto;
+  padding: 8px;
+  border-radius: 999px;
+}
+
+.mobile-topbar .logout-button span {
+  display: none;
+}

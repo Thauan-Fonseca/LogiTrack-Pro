@@ -1,7 +1,10 @@
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import ViagensPage from "./pages/ViagensPage";
 import DashboardPage from "./pages/DashboardPage";
+import LoginPage from "./pages/LoginPage";
+import RequireAuth from "./components/RequireAuth";
 import ThemeToggle from "./components/ThemeToggle";
+import LogoutButton from "./components/LogoutButton";
 import { useTheme } from "./hooks/useTheme";
 import "./App.css";
 
@@ -42,7 +45,7 @@ function NavItems() {
   );
 }
 
-function App() {
+function AppShell() {
   const { theme, alternar } = useTheme();
 
   return (
@@ -54,21 +57,21 @@ function App() {
         </nav>
         <div className="sidebar-footer">
           <ThemeToggle theme={theme} onToggle={alternar} />
+          <LogoutButton />
         </div>
       </aside>
 
       <div className="app-main">
         <header className="mobile-topbar">
           <span className="brand">LogiTrack Pro</span>
-          <ThemeToggle theme={theme} onToggle={alternar} />
+          <div className="mobile-topbar-actions">
+            <ThemeToggle theme={theme} onToggle={alternar} />
+            <LogoutButton />
+          </div>
         </header>
 
         <main className="content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/viagens" element={<ViagensPage />} />
-          </Routes>
+          <Outlet />
         </main>
 
         <nav className="bottom-nav">
@@ -76,6 +79,26 @@ function App() {
         </nav>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route
+        element={
+          <RequireAuth>
+            <AppShell />
+          </RequireAuth>
+        }
+      >
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/viagens" element={<ViagensPage />} />
+      </Route>
+    </Routes>
   );
 }
 

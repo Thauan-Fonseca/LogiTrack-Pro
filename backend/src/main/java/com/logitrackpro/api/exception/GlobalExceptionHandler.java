@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -14,6 +15,17 @@ import com.logitrackpro.api.dto.ErrorResponseDTO;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthentication(AuthenticationException ex, WebRequest request) {
+        ErrorResponseDTO body = new ErrorResponseDTO(
+            HttpStatus.UNAUTHORIZED.value(),
+            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+            "Usuário ou senha inválidos",
+            path(request)
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleValidation(MethodArgumentNotValidException ex, WebRequest request) {
