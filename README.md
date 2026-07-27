@@ -173,8 +173,13 @@ Todas calculadas via SQL nativo (`@Query(nativeQuery = true)`), não em memória
 - Records (Java 17+) para os DTOs
 - Entidades JPA com Lombok `@Getter`/`@Setter`, nunca `@Data` — evita `equals`/`hashCode`/`toString` percorrendo relacionamentos e caindo em `LazyInitializationException`
 
+**Tabela `usuarios` (não existe no script original da empresa)**
+- Adicionada exclusivamente para suportar o login: `id`, `username` (único), `senha` (hash bcrypt), `nome`
+- O script fornecido no desafio cobria apenas veículos/viagens/manutenções — a autenticação foi incorporada depois, como diferencial, e exigiu essa tabela nova
+
 **Autenticação**
 - Usuário único via seed (sem tela de cadastro) — suficiente para demonstrar o diferencial de segurança sem expandir o escopo do desafio
+- Senha armazenada com hash `BCrypt`, nunca em texto puro
 - Token JWT stateless guardado no `localStorage` do navegador
 - Alternativa de cookie `httpOnly` foi considerada, mas descartada por exigir CSRF token e configuração extra de `SameSite` sem ganho de segurança proporcional ao escopo deste projeto
 
@@ -195,7 +200,7 @@ Todas calculadas via SQL nativo (`@Query(nativeQuery = true)`), não em memória
 
 ## Alterações no script SQL fornecido
 
-O script original (`Desafio LogAp TRE - Carga Inicial.sql`) foi mantido quase integralmente — as mudanças são listadas na seção de decisões acima. O script final em uso é [`backend/src/main/resources/schema.sql`](backend/src/main/resources/schema.sql) (schema) + [`backend/src/main/resources/data.sql`](backend/src/main/resources/data.sql) (seed), reproduzido aqui:
+O script original (`Desafio LogAp TRE - Carga Inicial.sql`) foi mantido quase integralmente para as tabelas de veículos/viagens/manutenções — os ajustes nelas estão listados na seção de decisões acima. A tabela `usuarios` é a única adição completa, sem equivalente no script original (motivo também explicado acima). O script final em uso é [`backend/src/main/resources/schema.sql`](backend/src/main/resources/schema.sql) (schema) + [`backend/src/main/resources/data.sql`](backend/src/main/resources/data.sql) (seed), reproduzido aqui:
 
 ```sql
 -- schema.sql
