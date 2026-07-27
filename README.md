@@ -4,27 +4,22 @@ MVP desenvolvido para o desafio técnico da **LogAp I.T. Solutions**: um sistema
 
 ## Demonstração
 
-| Login | Dashboard |
-|---|---|
-| ![Login](docs/screenshots/01-login.png) | ![Dashboard](docs/screenshots/02-dashboard-claro.png) |
+🔗 **[https://logitrack-pro-1.onrender.com](https://logitrack-pro-1.onrender.com)**
 
-| Viagens | Novo registro (calendário) |
-|---|---|
-| ![Viagens](docs/screenshots/04-viagens-lista.png) | ![Formulário](docs/screenshots/05-viagem-form-calendario.png) |
+```
+usuário: admin
+senha:   admin123
+```
 
-<details>
-<summary>Tema escuro</summary>
-
-![Dashboard no tema escuro](docs/screenshots/03-dashboard-escuro.png)
-</details>
+> Hospedado no plano gratuito do Render — se o link demorar pra responder na primeira tentativa (o serviço "dorme" após 15 min sem uso), é o backend acordando (~30-60s). Na segunda tentativa já responde normal.
 
 ## Stack
 
-- **Backend**: Java 21, Spring Boot 4.1 (Web, Data JPA, Validation, Security), Lombok, Maven
+- **Backend**: Java 21, Spring Boot 4.1 (Web, Data JPA, Validation, Security, Actuator), springdoc-openapi (Swagger), Lombok, Maven
 - **Banco de dados**: PostgreSQL 16
 - **Autenticação**: Spring Security + JWT ([jjwt](https://github.com/jwtk/jjwt))
-- **Frontend**: React 19 + TypeScript, Vite, React Router, Axios
-- **Infra**: Docker + Docker Compose, Nginx (proxy reverso + servidor estático)
+- **Frontend**: React 19 + TypeScript, Vite, React Router 6, Axios
+- **Infra**: Docker + Docker Compose, Nginx, deploy em nuvem (Render)
 
 ## Como rodar
 
@@ -83,18 +78,38 @@ senha:   admin123
 
 ### Documentação da API
 
-Com o backend no ar, a documentação interativa (Swagger UI) fica em `http://localhost:8080/swagger-ui.html`.
+Com o backend no ar, a documentação interativa (Swagger UI) fica em `/swagger-ui.html` (local: `http://localhost:8080/swagger-ui.html`).
+
+## Deploy em nuvem (Render)
+
+A aplicação está publicada no Render como 3 recursos separados, a partir do mesmo repositório:
+
+- **PostgreSQL** — banco gerenciado pelo Render
+- **Web Service (backend)** — `Root Directory: backend`, builda o `Dockerfile` do backend
+- **Web Service (frontend)** — `Root Directory: frontend`, builda o `Dockerfile` do frontend
+
+Variáveis de ambiente específicas do deploy:
+
+| Serviço | Variável | Valor |
+|---|---|---|
+| Backend | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD` | Fornecidos pelo Postgres gerenciado do Render |
+| Backend | `APP_CORS_ALLOWED_ORIGINS` | URL pública do serviço de frontend |
+| Frontend | `VITE_API_URL` | URL pública do serviço de backend (variável de **build**, não de runtime) |
+
+Por que `VITE_API_URL` em vez do proxy do Nginx usado localmente: ver a seção "Comunicação frontend → backend" nas decisões técnicas abaixo.
 
 ## Arquitetura
 
 ```
-Navegador
-   │
-   ▼
-[React + TS]  ──(dev: Vite :5173 → API :8080 direto)──────────────┐
-   │                                                                │
-   ▼ (Docker: Nginx :8081)                                          │
-[Nginx] ──proxy /api/*──▶ [Spring Boot :8080] ──JDBC──▶ [PostgreSQL :5433/5432]
+Dev local (sem Docker):
+  Navegador → Vite :5173 ──(CORS)──→ Spring Boot :8080 ──JDBC──→ PostgreSQL :5433
+
+Docker Compose (local):
+  Navegador → Nginx :8081 ──proxy /api/*──→ Spring Boot :8080 ──JDBC──→ PostgreSQL :5433
+
+Render (produção):
+  Navegador → Nginx (serve estáticos do React)
+      └────────────(CORS, chamada direta)────────→ Spring Boot ──JDBC──→ PostgreSQL (Render)
 ```
 
 Backend em camadas convencionais:
@@ -121,37 +136,71 @@ Todas calculadas via SQL nativo (`@Query(nativeQuery = true)`), não em memória
 | Volume por Categoria | `VeiculoRepository.volumePorCategoria` | `LEFT JOIN` a partir de `veiculos` — categoria aparece mesmo com 0 viagens |
 | Cronograma de Manutenção | `ManutencaoRepository.proximasManutencoes` | 5 mais recentes, excluindo `CONCLUIDA` |
 | Ranking de Utilização | `VeiculoRepository.rankingUtilizacao` | Top 5 por km acumulado |
-| Projeção Financeira | `ManutencaoRepository.projecaoFinanceiraMesAtual` | Soma do custo de manutenções com `data_inicio` no mês atual, **independente do status** (ver decisão abaixo) |
+| Projeção Financeira | `ManutencaoRepository.projecaoFinanceiraMesAtual` | Soma do custo de manutenções com `data_inicio` no mês atual, independente do status |
 
 ## Decisões técnicas
 
-**Módulo de CRUD escolhido: Viagens** (não Manutenção). As tabelas/queries de manutenção continuam existindo e alimentando o dashboard, só não têm tela de CRUD própria (pois o enunciado frisava apenas um dos módulos, senão teria implementado os dois).
+**Módulo de CRUD**
+- Escolhido: **Viagens** (o enunciado pedia a implementação de apenas um dos dois módulos)
+- As tabelas e queries de Manutenção continuam existindo e alimentando o dashboard, só sem tela de CRUD própria
 
-**`schema.sql` + `data.sql` em vez de Flyway ou `ddl-auto=update`.** Reaproveita quase literalmente o script fornecido pela empresa, sem introduzir uma ferramenta de migração para um MVP. `ddl-auto=update` foi descartado por ser antipadrão fora de prototipagem (não reproduz `CHECK` constraints e não é rastreável). O banco é **recriado do zero a cada subida do backend** — decisão consciente para garantir um dataset sempre consistente durante a avaliação; dados criados via CRUD não persistem entre reinícios.
+**Inicialização do banco: `schema.sql` + `data.sql`, em vez de Flyway ou `ddl-auto=update`**
+- Reaproveita quase literalmente o script fornecido pela empresa, sem introduzir uma ferramenta de migração nova para um MVP
+- `ddl-auto=update` foi descartado por ser antipadrão fora de prototipagem (não reproduz `CHECK` constraints, não é rastreável)
+- O banco é recriado do zero a cada subida do backend — garante um dataset sempre consistente durante a avaliação; dados criados via CRUD não persistem entre reinícios
 
-**`BIGSERIAL`/`BIGINT` em vez de `SERIAL`/`INTEGER` nos IDs.** `Long` é o tipo idiomático para chaves primárias em Java/JPA, e o Hibernate valida o schema no boot — com `SERIAL` (32 bits) ele rejeita a inicialização por incompatibilidade com campos `Long` (64 bits). PK e FKs foram ajustadas de forma consistente.
+**`BIGSERIAL`/`BIGINT` em vez de `SERIAL`/`INTEGER` nos IDs**
+- `Long` é o tipo idiomático para chaves primárias em Java/JPA
+- O Hibernate valida o schema no boot e rejeita a inicialização se a coluna for `SERIAL` (32 bits) contra um campo `Long` (64 bits)
+- PK e FKs foram ajustadas de forma consistente
 
-**Índices adicionados em `viagens.veiculo_id`, `manutencoes.veiculo_id`, `manutencoes.data_inicio` e `manutencoes.status`.** Postgres não cria índice automático em coluna de foreign key (só na PK referenciada), e são exatamente essas colunas que o dashboard agrega e filtra.
+**Índices adicionados**: `viagens.veiculo_id`, `manutencoes.veiculo_id`, `manutencoes.data_inicio`, `manutencoes.status`
+- Postgres não cria índice automático em coluna de foreign key (só na PK referenciada)
+- São exatamente essas colunas que o dashboard agrega e filtra
 
-**`NOT NULL` em `veiculo_id`** (viagens e manutenções) e **`CHECK` em `manutencoes.status`** — reforça no banco regras que o CRUD já exige, e replica o padrão de `CHECK` que o próprio script original já usa em `veiculos.tipo`.
+**Constraints reforçadas no banco**
+- `NOT NULL` em `veiculo_id` (viagens e manutenções)
+- `CHECK` em `manutencoes.status`, replicando o padrão que o próprio script original já usa em `veiculos.tipo`
 
-**Duas manutenções extras no seed, com `data_inicio` calculada em cima de `CURRENT_DATE`.** O seed original é de 2024; sem isso, a métrica de Projeção Financeira ("mês atual") sempre mostraria R$ 0,00, não importa quando o projeto for avaliado.
+**Seed de manutenções com data relativa ao mês atual**
+- Duas manutenções extras no `data.sql`, com `data_inicio` calculada em cima de `CURRENT_DATE`
+- O seed original é de 2024; sem essa mudança, a métrica de Projeção Financeira ("mês atual") sempre mostraria R$ 0,00, não importa quando o projeto for avaliado
 
-**Projeção Financeira soma manutenções de qualquer status no mês atual** (não só `PENDENTE`). Interpretação adotada: é uma projeção do que está programado gastar no mês, então uma manutenção já `CONCLUIDA` dentro do mês ainda representa um gasto real daquele mês.
+**Projeção Financeira soma manutenções de qualquer status no mês atual** (não só `PENDENTE`)
+- Interpretação adotada: é uma projeção do que está programado gastar no mês, então uma manutenção já `CONCLUIDA` dentro do mês ainda representa um gasto real daquele mês
 
-**Records (Java 17+) para DTOs**, entidades JPA com Lombok (`@Getter/@Setter`, nunca `@Data` — evita `equals`/`hashCode`/`toString` percorrendo relacionamentos e caindo em `LazyInitializationException`).
+**DTOs e entidades**
+- Records (Java 17+) para os DTOs
+- Entidades JPA com Lombok `@Getter`/`@Setter`, nunca `@Data` — evita `equals`/`hashCode`/`toString` percorrendo relacionamentos e caindo em `LazyInitializationException`
 
-**Autenticação com usuário único via seed** (não há tela de cadastro) — suficiente para demonstrar o diferencial de segurança sem expandir o escopo do desafio. Token JWT stateless guardado no `localStorage` do navegador; alternativa de cookie `httpOnly` foi considerada, mas descartada por exigir CSRF token e configuração extra de `SameSite` sem ganho de segurança proporcional ao escopo deste projeto.
+**Tabela `usuarios` (não existe no script original da empresa)**
+- Adicionada exclusivamente para suportar o login: `id`, `username` (único), `senha` (hash bcrypt), `nome`
+- O script fornecido no desafio cobria apenas veículos/viagens/manutenções — a autenticação foi incorporada depois, como diferencial, e exigiu essa tabela nova
 
-**Nginx como proxy reverso** (`/api/*` → backend) no ambiente Docker: resolve CORS de vez (o navegador só fala com uma origem) e evita ter que embutir a URL da API no bundle JS de produção.
+**Autenticação**
+- Usuário único via seed (sem tela de cadastro) — suficiente para demonstrar o diferencial de segurança sem expandir o escopo do desafio
+- Senha armazenada com hash `BCrypt`, nunca em texto puro
+- Token JWT stateless guardado no `localStorage` do navegador
+- Alternativa de cookie `httpOnly` foi considerada, mas descartada por exigir CSRF token e configuração extra de `SameSite` sem ganho de segurança proporcional ao escopo deste projeto
 
-**Porta `5433`** para o Postgres do projeto (tanto no `docker-compose.yml` quanto no container avulso de desenvolvimento) — evita conflito com qualquer instalação local de Postgres na porta padrão `5432`.
+**CORS configurável por variável de ambiente** (`APP_CORS_ALLOWED_ORIGINS`)
+- Permite trocar a origem permitida sem rebuild: `localhost:5173` no dev local, `localhost:8081` no Docker Compose, a URL pública do frontend no deploy em nuvem
 
-**`react-router-dom` fixado na major 6** — a v7 carrega uma lista extensa de CVEs concentradas em recursos de SSR/React Server Components/server actions (modo "framework") que esta aplicação não usa (SPA 100% client-side); a v6 não tem essa superfície de ataque.
+**Comunicação frontend → backend: dois mecanismos, um por ambiente**
+- **Docker Compose (local)**: o Nginx faz proxy reverso de `/api/*` pro backend, via `BACKEND_URL=http://backend:8080` — o navegador só fala com uma origem, então não precisa de CORS
+- **Deploy em nuvem (Render)**: o navegador chama a URL pública do backend **diretamente**, via `VITE_API_URL` (assada no bundle JS em tempo de build) + CORS
+- Motivo da divergência: no Render, os dois serviços ficam atrás da mesma borda pública (Cloudflare). Um proxy servidor-a-servidor entre dois serviços atrás da mesma borda é interpretado como loop e bloqueado com `508 Loop Detected` — chamar o backend direto contorna esse problema
+- `proxy_ssl_server_name on;` no Nginx: necessário sempre que o upstream de um proxy é HTTPS — sem essa diretiva, o Nginx não envia o SNI no handshake TLS, e um upstream que roteia por SNI (como o do Render) rejeita a conexão
+
+**Porta `5433` para o Postgres local** (tanto no `docker-compose.yml` quanto no container avulso de desenvolvimento)
+- Evita conflito com qualquer instalação local de Postgres na porta padrão `5432`
+
+**`react-router-dom` fixado na major 6**
+- A v7 carrega uma lista extensa de CVEs concentradas em recursos de SSR/React Server Components/server actions (modo "framework") que esta aplicação não usa (SPA 100% client-side); a v6 não tem essa superfície de ataque
 
 ## Alterações no script SQL fornecido
 
-O script original (`Desafio LogAp TRE - Carga Inicial.sql`) foi mantido quase integralmente — as mudanças são listadas na seção de decisões acima. O script final em uso é [`backend/src/main/resources/schema.sql`](backend/src/main/resources/schema.sql) (schema) + [`backend/src/main/resources/data.sql`](backend/src/main/resources/data.sql) (seed), reproduzido aqui:
+O script original (`Desafio LogAp TRE - Carga Inicial.sql`) foi mantido quase integralmente para as tabelas de veículos/viagens/manutenções — os ajustes nelas estão listados na seção de decisões acima. A tabela `usuarios` é a única adição completa, sem equivalente no script original (motivo também explicado acima). O script final em uso é [`backend/src/main/resources/schema.sql`](backend/src/main/resources/schema.sql) (schema) + [`backend/src/main/resources/data.sql`](backend/src/main/resources/data.sql) (seed), reproduzido aqui:
 
 ```sql
 -- schema.sql
@@ -212,12 +261,12 @@ CREATE INDEX idx_manutencoes_status ON manutencoes(status);
 | GET | `/api/dashboard?veiculoId=` | Sim | As 5 métricas do dashboard |
 | GET | `/actuator/health` | Não | Healthcheck (usado pelo Docker Compose) |
 
-Detalhes de request/response de cada rota estão no Swagger UI (seção "Como rodar" acima).
+Detalhes de request/response de cada rota estão no Swagger UI (seção "Documentação da API" acima).
 
 ## Diferenciais implementados
 
 - ✅ **Frontend moderno**: React + TypeScript
 - ✅ **Segurança**: tela de login com autenticação JWT, rotas protegidas
-- ✅ **DevOps**: ambiente completo via Docker Compose (um comando sobe banco + backend + frontend)
+- ✅ **DevOps**: Docker Compose local (um comando sobe banco + backend + frontend) **e** deploy em nuvem no Render
 - ✅ Tema claro/escuro
 - ✅ Layout responsivo (sidebar no desktop, navegação inferior fixa no mobile)
