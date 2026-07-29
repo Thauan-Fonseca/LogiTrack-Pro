@@ -178,6 +178,16 @@
   font-size: 14px;
 }
 
+.info-banner {
+  background: color-mix(in srgb, var(--status-warning) 12%, transparent);
+  color: var(--status-warning);
+  border: 1px solid color-mix(in srgb, var(--status-warning) 35%, transparent);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
 .field-error {
   color: var(--status-critical);
   font-size: 12px;
