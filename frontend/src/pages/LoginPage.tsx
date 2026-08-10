@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [demorando, setDemorando] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -17,6 +18,7 @@ export default function LoginPage() {
     e.preventDefault();
     setErro(null);
     setEnviando(true);
+    const avisoDemora = setTimeout(() => setDemorando(true), 4000);
     try {
       const { token } = await authApi.login({ username, senha });
       authStorage.setToken(token);
@@ -25,6 +27,8 @@ export default function LoginPage() {
     } catch (err) {
       setErro(extrairErro(err).mensagem);
     } finally {
+      clearTimeout(avisoDemora);
+      setDemorando(false);
       setEnviando(false);
     }
   }
@@ -36,6 +40,12 @@ export default function LoginPage() {
         <p className="login-subtitle">Entre para acessar o painel</p>
 
         {erro && <div className="error-banner">{erro}</div>}
+        {!erro && demorando && (
+          <div className="info-banner">
+            O servidor está iniciando (plano gratuito do Render) — a primeira requisição
+            pode levar até 2 minutos. Aguarde...
+          </div>
+        )}
 
         <div className="field">
           <label htmlFor="login-username">Usuário</label>

@@ -11,7 +11,7 @@ usuário: admin
 senha:   admin123
 ```
 
-> Hospedado no plano gratuito do Render — se o link demorar pra responder na primeira tentativa (o serviço "dorme" após 15 min sem uso), é o backend acordando (~30-60s). Na segunda tentativa já responde normal.
+> Hospedado no plano gratuito do Render — se o link demorar pra responder na primeira tentativa (o serviço "dorme" após 15 min sem uso), é o backend acordando (~60-120s). Na segunda tentativa já responde normal.
 
 ## Stack
 
@@ -139,6 +139,13 @@ Todas calculadas via SQL nativo (`@Query(nativeQuery = true)`), não em memória
 | Projeção Financeira | `ManutencaoRepository.projecaoFinanceiraMesAtual` | Soma do custo de manutenções com `data_inicio` no mês atual, independente do status |
 
 ## Decisões técnicas
+
+**Idioma do código: inglês para a "casca" técnica, português para o domínio de negócio**
+- Vocabulário de arquitetura/framework fica em inglês: pacotes (`controller`, `service`, `repository`, `dto`, `mapper`, `model`, `config`, `exception`, `security`), sufixos de classe (`DTO`, `Controller`, `Service`, `Repository`, `Mapper`) e campos genéricos (`id`, `token`, `username`, `status`, `error`, `message`, `timestamp`) — é o vocabulário padrão do ecossistema Java/Spring e do próprio HTTP, traduzir geraria só ruído
+- Vocabulário de negócio fica em português: entidades (`Veiculo`, `Viagem`, `Manutencao`), campos (`placa`, `origem`, `destino`, `kmPercorrida`, `custoEstimado`, `dataInicio`), valores de enum (`PENDENTE`, `EM_REALIZACAO`, `CONCLUIDA`) e rotas (`/api/veiculos`, `/api/viagens`) — reflete o vocabulário real da LogiTrack (empresa brasileira) e evita tradução ida-e-volta entre o que aparece pra o usuário final e o que o código representa
+- A mesma lógica se repete no frontend: infraestrutura genérica (`httpClient`, `authStorage`, tipos como `LoginRequest`) em inglês; estado e texto de UI (`usuario`, `senha`, `erro`, `extrairErro`) em português
+- Mensagens de validação e de erro (`@NotBlank(message = "Informe o usuário")`) sempre em português, por serem texto voltado ao usuário final
+- Comentários que explicam o "porquê" de uma decisão também em português, já que o público principal é quem avalia este desafio
 
 **Módulo de CRUD**
 - Escolhido: **Viagens** (o enunciado pedia a implementação de apenas um dos dois módulos)
