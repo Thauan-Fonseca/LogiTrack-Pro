@@ -11,7 +11,7 @@ usuário: admin
 senha:   admin123
 ```
 
-> Hospedado no plano gratuito do Render — se o link demorar pra responder na primeira tentativa (o serviço "dorme" após 15 min sem uso), é o backend acordando (~30-60s). Na segunda tentativa já responde normal.
+> Hospedado no plano gratuito do Render — se o link demorar pra responder na primeira tentativa (o serviço "dorme" após 15 min sem uso), é o backend acordando (~60-120s). Na segunda tentativa já responde normal.
 
 ## Stack
 

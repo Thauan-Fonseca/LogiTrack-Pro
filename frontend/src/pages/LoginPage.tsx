@@ -43,7 +43,7 @@ export default function LoginPage() {
         {!erro && demorando && (
           <div className="info-banner">
             O servidor está iniciando (plano gratuito do Render) — a primeira requisição
-            pode levar até 1 minuto. Aguarde...
+            pode levar até 2 minutos. Aguarde...
           </div>
         )}
 
